@@ -18,16 +18,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef XUPDATE_H
-#define XUPDATE_H
+#ifndef XUpdate_H
+#define XUpdate_H
 
-#include "xupdate.h"
+#include <QMainWindow>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QTimer>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QFile>
+#include <QStandardPaths>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QProcess>
 
-class XUpdate : public QBinary {
+QT_BEGIN_NAMESPACE
+namespace Ui { class XUpdate; }
+QT_END_NAMESPACE
+
+class XUpdate : public QMainWindow
+{
     Q_OBJECT
 
 public:
-    XUpdate(QIODevice *pDevice);
+    XUpdate(QWidget *parent = nullptr);
+    ~XUpdate();
+    void setTargetVersion(const QString &versionTag);
+    void showVersionSelectionDialog(const QString &stableVersion, const QString &betaVersion);
+    void startUpdate();
+    bool replace_self(const void* newImageData, size_t newImageSize);
+private slots:
+    void updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+#ifdef Q_OS_WIN
+    void fileDownloaded();
+    void handleReleaseInfo();
+#endif
+private:
+    Ui::XUpdate *ui;
+    QNetworkAccessManager *networkManager;
+    QString m_targetVersion;
 };
 
-#endif  // XUPDATE_H
+#endif // XUpdate_H
