@@ -52,8 +52,10 @@ public:
     bool replace_self(const void* newImageData, size_t newImageSize);
 private slots:
     void updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+#ifdef Q_OS_WIN
     void fileDownloaded();
     void handleReleaseInfo();
+#endif
 private:
     Ui::XUpdate *ui;
     QNetworkAccessManager *networkManager;

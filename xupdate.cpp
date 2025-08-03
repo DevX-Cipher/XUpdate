@@ -63,7 +63,7 @@ void XUpdate::setTargetVersion(const QString &versionTag)
     m_targetVersion = versionTag;
     qDebug() << "Update target version set to:" << m_targetVersion;
 }
-
+#ifdef Q_OS_WIN
 void XUpdate::startUpdate()
 {
     QUrl releaseUrl("https://api.github.com/repos/horsicq/DIE-engine/releases");
@@ -73,7 +73,7 @@ void XUpdate::startUpdate()
     qDebug() << "Fetching release information for version:" << m_targetVersion;
     connect(reply, &QNetworkReply::finished, this, &XUpdate::handleReleaseInfo);
 }
-
+#endif
 void XUpdate::updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
     if (bytesTotal > 0) {
@@ -310,7 +310,7 @@ void XUpdate::fileDownloaded()
     reply->deleteLater();
 }
 #endif
-
+#ifdef Q_OS_WIN
 void XUpdate::handleReleaseInfo()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
@@ -387,7 +387,8 @@ void XUpdate::handleReleaseInfo()
 
     reply->deleteLater();
 }
-
+#endif
+#ifdef Q_OS_WIN
 void XUpdate::showVersionSelectionDialog(const QString &stableVersion, const QString &betaVersion)
 {
     QDialog dialog(this);
@@ -439,3 +440,4 @@ void XUpdate::showVersionSelectionDialog(const QString &stableVersion, const QSt
         }
     }
 }
+#endif
