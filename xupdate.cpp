@@ -84,12 +84,14 @@ void XUpdate::updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
             ui->label->setVisible(true);
 
         qDebug() << "Download progress: " << progress << "%";
-
+#ifdef Q_OS_WIN
         DesktopIntegrationHelper::SetProgressState(TBPF_NORMAL);
         DesktopIntegrationHelper::SetProgressValue(static_cast<int>(bytesReceived), static_cast<int>(bytesTotal));
+#endif
     }
 }
 
+#ifdef Q_OS_WIN
 bool XUpdate::replace_self(const void* newImageData, size_t newImageSize)
 {
     // Get current executable path using Qt
@@ -182,71 +184,8 @@ bool XUpdate::replace_self(const void* newImageData, size_t newImageSize)
     QCoreApplication::quit();
     return true;
 }
-
-/*
-bool XUpdate::replace_self(const void* newImageData, size_t newImageSize)
-{
-    wchar_t exePath[MAX_PATH];
-    if (!GetModuleFileNameW(NULL, exePath, MAX_PATH)) {
-        qDebug() << "Failed to get current executable path.";
-        return false;
-    }
-
-    std::wstring currentExe = exePath;
-    std::wstring backupExe = currentExe + L".backup.exe";
-    std::wstring tempExe = QStandardPaths::writableLocation(QStandardPaths::TempLocation).toStdWString() + L"\\die_temp.exe";
-
-    QFile tempFile(QString::fromStdWString(tempExe));
-    if (!tempFile.open(QIODevice::WriteOnly)) {
-        qDebug() << "Failed to open temp file for writing.";
-        return false;
-    }
-    tempFile.write(static_cast<const char*>(newImageData), static_cast<qint64>(newImageSize));
-    tempFile.close();
-
-    if (!MoveFileExW(currentExe.c_str(), backupExe.c_str(), MOVEFILE_REPLACE_EXISTING)) {
-        qDebug() << "Failed to backup current executable.";
-        QFile::remove(QString::fromStdWString(tempExe));
-        return false;
-    }
-
-    if (!MoveFileExW(tempExe.c_str(), currentExe.c_str(), MOVEFILE_REPLACE_EXISTING)) {
-        qDebug() << "Failed to replace current executable.";
-        MoveFileExW(backupExe.c_str(), currentExe.c_str(), MOVEFILE_REPLACE_EXISTING); // Rollback
-        QFile::remove(QString::fromStdWString(tempExe));
-        return false;
-    }
-
-    STARTUPINFOW si = { sizeof(si) };
-    PROCESS_INFORMATION pi = {};
-    if (!CreateProcessW(currentExe.c_str(), NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
-        qDebug() << "Failed to relaunch updated executable.";
-        return false;
-    }
-
-    std::wstring cleanupCmd = L"cmd /c ping 127.0.0.1 -n 3 >nul & del \"" + backupExe + L"\"";
-    STARTUPINFOW si2 = { sizeof(si2) };
-    PROCESS_INFORMATION pi2 = {};
-    if (!CreateProcessW(
-            NULL,
-            &cleanupCmd[0],
-            NULL, NULL, FALSE,
-            CREATE_NO_WINDOW,
-            NULL, NULL,
-            &si2, &pi2)) {
-        qDebug() << "Failed to start cleanup process for backup deletion. Error:" << GetLastError();
-    }
-
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
-    CloseHandle(pi2.hProcess);
-    CloseHandle(pi2.hThread);
-
-    QCoreApplication::quit();
-    return true;
-}
-*/
-
+#endif
+#ifdef Q_OS_WIN
 void XUpdate::fileDownloaded()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
@@ -370,7 +309,7 @@ void XUpdate::fileDownloaded()
 
     reply->deleteLater();
 }
-
+#endif
 
 void XUpdate::handleReleaseInfo()
 {
