@@ -18,32 +18,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef XUPDATER_H
-#define XUPDATER_H
+#ifndef XUpdate_H
+#define XUpdate_H
 
 #include <QMainWindow>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QTimer>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QFile>
+#include <QStandardPaths>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QProcess>
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class XUpdater; }
+namespace Ui { class XUpdate; }
 QT_END_NAMESPACE
 
-class XUpdater : public QMainWindow
+class XUpdate : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    XUpdater(QWidget *parent = nullptr);
-    ~XUpdater();
-
+    XUpdate(QWidget *parent = nullptr);
+    ~XUpdate();
+    void setTargetVersion(const QString &versionTag);
+    void showVersionSelectionDialog(const QString &stableVersion, const QString &betaVersion);
+    void startUpdate();
+    bool replace_self(const void* newImageData, size_t newImageSize);
 private slots:
     void updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void fileDownloaded();
     void handleReleaseInfo();
 private:
-    Ui::XUpdater *ui;
+    Ui::XUpdate *ui;
     QNetworkAccessManager *networkManager;
+    QString m_targetVersion;
 };
 
-#endif // XUPDATER_H
+#endif // XUpdate_H
