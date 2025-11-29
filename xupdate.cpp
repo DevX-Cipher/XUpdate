@@ -44,7 +44,7 @@ XUpdate::XUpdate(QWidget *parent)
     , networkManager(new QNetworkAccessManager(this))
 {
     ui->setupUi(this);
-    DesktopIntegrationHelper::Initialize(this);
+    //DesktopIntegrationHelper::Initialize(this);
     setFixedSize(width(), height());
     ui->label->setVisible(false);
 
