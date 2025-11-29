@@ -25,7 +25,7 @@
 #include "qpushbutton.h"
 #include "qradiobutton.h"
 #include "ui_xupdate.h"
-#include "desktopintegrationhelper.h"
+//#include "desktopintegrationhelper.h"
 #include <zlib.h>
 #include <QFile>
 #include <QStandardPaths>
@@ -84,10 +84,10 @@ void XUpdate::updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
             ui->label->setVisible(true);
 
         qDebug() << "Download progress: " << progress << "%";
-#ifdef Q_OS_WIN
-        DesktopIntegrationHelper::SetProgressState(TBPF_NORMAL);
-        DesktopIntegrationHelper::SetProgressValue(static_cast<int>(bytesReceived), static_cast<int>(bytesTotal));
-#endif
+//#ifdef Q_OS_WIN
+       // DesktopIntegrationHelper::SetProgressState(TBPF_NORMAL);
+       // DesktopIntegrationHelper::SetProgressValue(static_cast<int>(bytesReceived), static_cast<int>(bytesTotal));
+//#endif
     }
 }
 
