@@ -85,7 +85,7 @@ void XUpdate::updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 
         qDebug() << "Download progress: " << progress << "%";
 //#ifdef Q_OS_WIN
-       // DesktopIntegrationHelper::SetProgressState(TBPF_NORMAL);
+        //DesktopIntegrationHelper::SetProgressState(TBPF_NORMAL);
        // DesktopIntegrationHelper::SetProgressValue(static_cast<int>(bytesReceived), static_cast<int>(bytesTotal));
 //#endif
     }
@@ -153,26 +153,21 @@ bool XUpdate::replace_self(const void* newImageData, size_t newImageSize)
     qDebug() << "New executable launched with PID:" << pid;
     delete process;
 
-    // Schedule cleanup using Windows API
-    std::wstring cleanupCmd = L"cmd /c ping 127.0.0.1 -n 6 >nul & del /F /Q \"" + backupExe.toStdWString() + L"\"";
-    qDebug() << "Cleanup command:" << QString::fromStdWString(cleanupCmd);
+    // Schedule cleanup using Qt's QProcess
+    QString cleanupCmd = QString("ping 127.0.0.1 -n 6 >nul & del /F /Q \"%1\"").arg(backupExe);
+    qDebug() << "Cleanup command:" << cleanupCmd;
 
-    STARTUPINFOW si = { sizeof(si) };
-    PROCESS_INFORMATION pi = {};
-    if (!CreateProcessW(
-            NULL,
-            &cleanupCmd[0],
-            NULL, NULL, FALSE,
-            CREATE_NO_WINDOW,
-            NULL, NULL,
-            &si, &pi)) {
-        qDebug() << "Failed to start cleanup process for backup deletion. Error:" << GetLastError();
+    QProcess *cleanupProcess = new QProcess();
+    cleanupProcess->setProgram("cmd");
+    cleanupProcess->setArguments(QStringList() << "/c" << cleanupCmd);
+
+    qint64 cleanupPid = 0;
+    if (!cleanupProcess->startDetached(&cleanupPid)) {
+        qDebug() << "Failed to start cleanup process for backup deletion. Error:" << cleanupProcess->errorString();
     } else {
-        qDebug() << "Cleanup process started for:" << backupExe;
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
+        qDebug() << "Cleanup process started for:" << backupExe << "with PID:" << cleanupPid;
     }
-
+    delete cleanupProcess;
     // Log backup file state
     if (QFile::exists(backupExe)) {
         qDebug() << "Backup file still exists before exit:" << backupExe;
