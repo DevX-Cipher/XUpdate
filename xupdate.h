@@ -21,6 +21,10 @@
 #ifndef XUpdate_H
 #define XUpdate_H
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+
 #include <QMainWindow>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
