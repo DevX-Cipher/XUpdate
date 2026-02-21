@@ -38,15 +38,15 @@
 #endif
 
 XUpdate::XUpdate(QWidget *parent, const QString &outputDir)
-    : QMainWindow(parent)
-    , ui(new Ui::XUpdate)
-    , m_networkManager(new QNetworkAccessManager(this))
-    , m_totalFiles(0)
-    , m_downloadedFiles(0)
-    , m_failedFiles(0)
-    , m_isCancelled(false)
-    , m_zipDownloadReply(nullptr)
-    , m_customOutputDir(outputDir)
+    : QMainWindow(parent),
+      ui(new Ui::XUpdate),
+      m_networkManager(new QNetworkAccessManager(this)),
+      m_totalFiles(0),
+      m_downloadedFiles(0),
+      m_failedFiles(0),
+      m_isCancelled(false),
+      m_zipDownloadReply(nullptr),
+      m_customOutputDir(outputDir)
 {
     ui->setupUi(this);
 
@@ -119,10 +119,7 @@ bool XUpdate::downloadFileWithWinHTTP(const QString &url, const QString &outputP
     log("Initializing WinHTTP...", true);
 
     // Initialize WinHTTP
-    hSession = WinHttpOpen(L"DIE-Downloader/1.0",
-                           WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
-                           WINHTTP_NO_PROXY_NAME,
-                           WINHTTP_NO_PROXY_BYPASS, 0);
+    hSession = WinHttpOpen(L"DIE-Downloader/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
 
     if (!hSession) {
         log("ERROR: WinHttpOpen failed - Error: " + QString::number(GetLastError()));
@@ -143,10 +140,7 @@ bool XUpdate::downloadFileWithWinHTTP(const QString &url, const QString &outputP
 
     // Create request
     DWORD flags = (qurl.scheme() == "https") ? WINHTTP_FLAG_SECURE : 0;
-    hRequest = WinHttpOpenRequest(hConnect, L"GET", wPath.c_str(),
-                                  NULL, WINHTTP_NO_REFERER,
-                                  WINHTTP_DEFAULT_ACCEPT_TYPES,
-                                  flags);
+    hRequest = WinHttpOpenRequest(hConnect, L"GET", wPath.c_str(), NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, flags);
 
     if (!hRequest) {
         log("ERROR: WinHttpOpenRequest failed - Error: " + QString::number(GetLastError()));
@@ -157,10 +151,7 @@ bool XUpdate::downloadFileWithWinHTTP(const QString &url, const QString &outputP
 
     // Send request
     log("Sending request...", true);
-    if (!WinHttpSendRequest(hRequest,
-                            WINHTTP_NO_ADDITIONAL_HEADERS, 0,
-                            WINHTTP_NO_REQUEST_DATA, 0,
-                            0, 0)) {
+    if (!WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0)) {
         log("ERROR: WinHttpSendRequest failed - Error: " + QString::number(GetLastError()));
         WinHttpCloseHandle(hRequest);
         WinHttpCloseHandle(hConnect);
@@ -182,9 +173,7 @@ bool XUpdate::downloadFileWithWinHTTP(const QString &url, const QString &outputP
     // Check status code
     DWORD statusCode = 0;
     DWORD statusCodeSize = sizeof(statusCode);
-    WinHttpQueryHeaders(hRequest,
-                        WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
-                        NULL, &statusCode, &statusCodeSize, NULL);
+    WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, NULL, &statusCode, &statusCodeSize, NULL);
 
     log("HTTP Status: " + QString::number(statusCode), true);
 
@@ -194,7 +183,7 @@ bool XUpdate::downloadFileWithWinHTTP(const QString &url, const QString &outputP
         WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_LOCATION, NULL, NULL, &dwSize, NULL);
 
         if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-            wchar_t* szLocation = new wchar_t[dwSize / sizeof(wchar_t)];
+            wchar_t *szLocation = new wchar_t[dwSize / sizeof(wchar_t)];
             if (WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_LOCATION, NULL, szLocation, &dwSize, NULL)) {
                 QString redirectUrl = QString::fromWCharArray(szLocation);
                 delete[] szLocation;
@@ -224,9 +213,7 @@ bool XUpdate::downloadFileWithWinHTTP(const QString &url, const QString &outputP
     // Get content length
     DWORD contentLength = 0;
     DWORD contentLengthSize = sizeof(contentLength);
-    WinHttpQueryHeaders(hRequest,
-                        WINHTTP_QUERY_CONTENT_LENGTH | WINHTTP_QUERY_FLAG_NUMBER,
-                        NULL, &contentLength, &contentLengthSize, NULL);
+    WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_CONTENT_LENGTH | WINHTTP_QUERY_FLAG_NUMBER, NULL, &contentLength, &contentLengthSize, NULL);
 
     if (contentLength > 0) {
         log("Content length: " + QString::number(contentLength / 1024.0 / 1024.0, 'f', 2) + " MB", true);
@@ -264,10 +251,7 @@ bool XUpdate::downloadFileWithWinHTTP(const QString &url, const QString &outputP
                 double mbReceived = totalBytesRead / (1024.0 * 1024.0);
                 double mbTotal = contentLength / (1024.0 * 1024.0);
 
-                ui->progressBar->setFormat(QString("Downloading: %1 MB / %2 MB (%3%)")
-                                               .arg(mbReceived, 0, 'f', 1)
-                                               .arg(mbTotal, 0, 'f', 1)
-                                               .arg(percentage));
+                ui->progressBar->setFormat(QString("Downloading: %1 MB / %2 MB (%3%)").arg(mbReceived, 0, 'f', 1).arg(mbTotal, 0, 'f', 1).arg(percentage));
 
                 lastPercentage = percentage;
             }
@@ -277,7 +261,7 @@ bool XUpdate::downloadFileWithWinHTTP(const QString &url, const QString &outputP
             ui->progressBar->setFormat(QString("Downloading: %1 MB").arg(mbReceived, 0, 'f', 1));
         }
 
-        QApplication::processEvents(); // Keep UI responsive
+        QApplication::processEvents();  // Keep UI responsive
     }
 
     file.close();
@@ -384,8 +368,8 @@ void XUpdate::extractZipFile()
                            "if (Test-Path \"$tempExtract\\Detect-It-Easy-master\\yara_rules\") { "
                            "  Copy-Item -Path \"$tempExtract\\Detect-It-Easy-master\\yara_rules\" -Destination \"$destPath\\yara_rules\" -Recurse -Force; "
                            "} "
-                           "Remove-Item -Path $tempExtract -Recurse -Force"
-                           ).arg(m_tempZipPath)
+                           "Remove-Item -Path $tempExtract -Recurse -Force")
+                           .arg(m_tempZipPath)
                            .arg(m_outputDir)
                            .arg(tempExtractPath);
 
@@ -418,8 +402,8 @@ void XUpdate::extractZipFile()
         }
     });
 
-    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this, [this, process, progressTimer, tempExtractPath](int code, QProcess::ExitStatus status) {
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
+            [this, process, progressTimer, tempExtractPath](int code, QProcess::ExitStatus status) {
                 progressTimer->stop();
                 progressTimer->deleteLater();
 
@@ -510,40 +494,37 @@ void XUpdate::extractZipFileFallback()
     progressTimer->start(800);
 
     QStringList args;
-    args << "/c" << "tar" << "-xf" << m_tempZipPath
-         << "-C" << m_outputDir
-         << "--strip-components=1"
+    args << "/c" << "tar" << "-xf" << m_tempZipPath << "-C" << m_outputDir << "--strip-components=1"
          << "Detect-It-Easy-master/db"
          << "Detect-It-Easy-master/yara_rules";
 
-    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this, [this, process, progressTimer](int code, QProcess::ExitStatus) {
-                progressTimer->stop();
-                progressTimer->deleteLater();
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, [this, process, progressTimer](int code, QProcess::ExitStatus) {
+        progressTimer->stop();
+        progressTimer->deleteLater();
 
-                if (code == 0) {
-                    ui->progressBar->setValue(95);
-                    ui->progressBar->setFormat("Verifying files... (95%)");
-                    log("Extraction successful!");
-                    downloadComplete();
-                } else {
-                    log("ERROR: Extraction failed!");
-                    QMessageBox::critical(this, "Error",
-                                          "All extraction methods failed. You may need to manually extract:\n" +
-                                              m_tempZipPath + "\n\nExtract the 'db' and 'yara_rules' folders to:\n" + m_outputDir);
-                }
+        if (code == 0) {
+            ui->progressBar->setValue(95);
+            ui->progressBar->setFormat("Verifying files... (95%)");
+            log("Extraction successful!");
+            downloadComplete();
+        } else {
+            log("ERROR: Extraction failed!");
+            QMessageBox::critical(this, "Error",
+                                  "All extraction methods failed. You may need to manually extract:\n" + m_tempZipPath +
+                                      "\n\nExtract the 'db' and 'yara_rules' folders to:\n" + m_outputDir);
+        }
 
-                log("Cleaning up...", true);
-                if (QFile::exists(m_tempZipPath)) {
-                    if (QFile::remove(m_tempZipPath)) {
-                        log("Temporary files removed", true);
-                    } else {
-                        log("WARNING: Failed to delete ZIP file", true);
-                    }
-                }
+        log("Cleaning up...", true);
+        if (QFile::exists(m_tempZipPath)) {
+            if (QFile::remove(m_tempZipPath)) {
+                log("Temporary files removed", true);
+            } else {
+                log("WARNING: Failed to delete ZIP file", true);
+            }
+        }
 
-                process->deleteLater();
-            });
+        process->deleteLater();
+    });
 
     process->start("cmd.exe", args);
 }
@@ -565,7 +546,8 @@ void XUpdate::downloadComplete()
 
     QMessageBox::information(this, "Done",
                              "Download and extraction complete!\n\n"
-                             "Location: " + m_outputDir);
+                             "Location: " +
+                                 m_outputDir);
 }
 
 void XUpdate::onCancelDownload()
@@ -583,16 +565,11 @@ void XUpdate::countFilesRecursively(const QString &dirPath)
     QDir dir(dirPath);
     if (!dir.exists()) return;
 
-    QFileInfoList entries = dir.entryInfoList(
-        QDir::NoDotAndDotDot | QDir::Files | QDir::Dirs,
-        QDir::Name
-        );
+    QFileInfoList entries = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::Files | QDir::Dirs, QDir::Name);
 
     for (const QFileInfo &entry : entries) {
-        if (entry.isDir())
-            countFilesRecursively(entry.absoluteFilePath());
-        else
-            m_totalFiles++;
+        if (entry.isDir()) countFilesRecursively(entry.absoluteFilePath());
+        else m_totalFiles++;
     }
 }
 

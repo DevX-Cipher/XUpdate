@@ -33,11 +33,12 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class XUpdate; }
+namespace Ui {
+class XUpdate;
+}
 QT_END_NAMESPACE
 
-class XUpdate : public QMainWindow
-{
+class XUpdate : public QMainWindow {
     Q_OBJECT
 
 public:
@@ -85,4 +86,4 @@ private:
     QString m_customOutputDir;
 };
 
-#endif // XUPDATE_H
+#endif  // XUPDATE_H
