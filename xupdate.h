@@ -21,69 +21,40 @@
 #ifndef XUPDATE_H
 #define XUPDATE_H
 
-#include <QMainWindow>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QJsonDocument>
-#include <QJsonObject>
+#include "xthreadobject.h"
+#include "xgithub.h"
+#include "xzip.h"
 
-#ifdef Q_OS_WIN
-#include <windows.h>
-#include <winhttp.h>
-#endif
+#include <QDate>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QList>
+#include <QStandardPaths>
 
-QT_BEGIN_NAMESPACE
-namespace Ui {
-class XUpdate;
-}
-QT_END_NAMESPACE
-
-class XUpdate : public QMainWindow {
+class XUpdate : public XThreadObject {
     Q_OBJECT
 
 public:
-    explicit XUpdate(QWidget *parent = nullptr, const QString &outputDir = QString());
-    ~XUpdate();
+    struct RECORD {
+        QString sLocalPath;
+        QString sInfoURL;
+        QString sZipURL;
+    };
 
-private slots:
-    void checkForUpdates();
-    void onUpdateCheckFinished();
-    void startAutoDownload();
-    void onCancelDownload();
-    void onZipDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-    void onZipDownloadFinished();
-    void onApiReplyFinished(QNetworkReply *reply);
-    void onDownloadProgress(qint64 received, qint64 total);
-    void onFileDownloadFinished(QNetworkReply *reply);
-    void onPageScanFinished();
+    explicit XUpdate(QObject *pParent = nullptr);
+
+    // sURL: direct URL to remote info.ini
+    // zip URL is derived by replacing "info.ini" with "{foldername}.zip"
+    void addRecord(const QString &sLocalPath, const QString &sURL);
+
+    virtual void process() override;
 
 private:
-    void log(const QString &message, bool debugOnly = false);
-    void updateStatus(const QString &status);
-    void extractZipFile();
-    void extractWithPowerShell();
-    void countFilesRecursively(const QString &dirPath);
-    void downloadComplete();
-    void fallbackToDirectDownload();
-    void extractZipFileFallback();
-    void scanDirectory(const QString &path, const QString &localBase);
-    void processNextDownload();
+    static QDate _parseDate(const QString &sContent);
+    bool _downloadAndUnpack(const RECORD &record);
 
-#ifdef Q_OS_WIN
-    bool downloadFileWithWinHTTP(const QString &url, const QString &outputPath);
-#endif
-
-    Ui::XUpdate *ui;
-    QNetworkAccessManager *m_networkManager;
-    QString m_outputDir;
-    QString m_tempZipPath;
-    QString m_latestCommitSha;
-    QNetworkReply *m_zipDownloadReply;
-    int m_totalFiles = 0;
-    int m_downloadedFiles = 0;
-    int m_failedFiles = 0;
-    bool m_isCancelled = false;
-    QString m_customOutputDir;
+    QList<RECORD> m_listRecords;
 };
 
 #endif  // XUPDATE_H
