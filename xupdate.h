@@ -30,7 +30,9 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QList>
+#include <QRegularExpression>
 #include <QStandardPaths>
+#include <QTemporaryDir>
 
 class XUpdate : public XThreadObject {
     Q_OBJECT
@@ -38,21 +40,31 @@ class XUpdate : public XThreadObject {
 public:
     struct RECORD {
         QString sLocalPath;
-        QString sInfoURL;
-        QString sZipURL;
+        QString sReleaseURL;
+        QString sZIPName;
     };
 
     explicit XUpdate(QObject *pParent = nullptr);
 
-    // sURL: direct URL to remote info.ini
-    // zip URL is derived by replacing "info.ini" with "{foldername}.zip"
+    // sURL: GitHub release tag URL, e.g. https://github.com/user/repo/releases/tag/tag
+    // ZIP asset name is derived from the tag name as "{tag}.zip"
     void addRecord(const QString &sLocalPath, const QString &sURL);
 
     virtual void process() override;
 
 private:
+    struct GITHUB_RELEASE_INFO {
+        bool bValid = false;
+        QString sUserName;
+        QString sRepoName;
+        QString sTag;
+    };
+
+    static GITHUB_RELEASE_INFO _parseReleaseURL(const QString &sURL);
     static QDate _parseDate(const QString &sContent);
-    bool _downloadAndUnpack(const RECORD &record);
+    static QString _getArchiveRootPrefix(const QList<XArchive::RECORD> &listRecords);
+    static bool _findZIPRecord(const XGitHub::RELEASE_HEADER &releaseHeader, const QString &sZIPName, XGitHub::RELEASE_RECORD *pRecord);
+    bool _downloadAndUnpack(const RECORD &record, const XGitHub::RELEASE_HEADER &releaseHeader, bool bClearDestination);
 
     QList<RECORD> m_listRecords;
 };
