@@ -234,14 +234,14 @@ bool XUpdate::_downloadAndUnpack(const RECORD &record, const XGitHub::RELEASE_HE
     QString sTempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
     QString sTempZip = QDir(sTempDir).filePath(zipRecord.sName);
 
-    emit infoMessage(tr("Downloading %1...").arg(zipRecord.sName));
+    emit infoMessage(tr("Downloading %1") + QString("...").arg(zipRecord.sName));
 
     if (!XGitHub::downloadFile(zipRecord.sSrc, sTempZip)) {
-        emit errorMessage(tr("Failed to download: %1").arg(zipRecord.sSrc));
+        emit errorMessage(tr("Failed to download") + QString(": %1").arg(zipRecord.sSrc));
         return false;
     }
 
-    emit infoMessage(tr("Extracting %1...").arg(zipRecord.sName));
+    emit infoMessage(tr("Extracting %1") + QString("...").arg(zipRecord.sName));
 
     if (bClearDestination) {
         QDir(record.sLocalPath).removeRecursively();
@@ -285,17 +285,17 @@ bool XUpdate::_downloadAndUnpack(const RECORD &record, const XGitHub::RELEASE_HE
                 emit errorMessage(tr("Cannot create temporary unpack directory."));
             }
         } else {
-            emit errorMessage(tr("Invalid ZIP archive: %1").arg(sTempZip));
+            emit errorMessage(tr("Invalid ZIP archive") + QString(": %1").arg(sTempZip));
         }
         file.close();
     } else {
-        emit errorMessage(tr("Cannot open downloaded ZIP: %1").arg(sTempZip));
+        emit errorMessage(tr("Cannot open downloaded ZIP") + QString(": %1").arg(sTempZip));
     }
 
     QFile::remove(sTempZip);
 
     if (bSuccess) {
-        emit infoMessage(tr("%1 updated successfully.").arg(sDisplayName));
+        emit infoMessage((QString("%1 ") + tr("updated successfully.")).arg(sDisplayName));
     } else {
         emit errorMessage(tr("Failed to extract %1.").arg(sDisplayName));
     }
@@ -315,11 +315,11 @@ void XUpdate::process()
         GITHUB_RELEASE_INFO releaseInfo = _parseReleaseURL(record.sReleaseURL);
 
         if (!releaseInfo.bValid) {
-            emit errorMessage(tr("Unsupported GitHub release URL: %1").arg(record.sReleaseURL));
+            emit errorMessage(tr("Unsupported GitHub release URL") + QString(": %1").arg(record.sReleaseURL));
             continue;
         }
 
-        emit infoMessage(tr("Checking %1...").arg(sFolderName));
+        emit infoMessage(tr("Checking %1") + QString("...").arg(sFolderName));
 
         XGitHub github(releaseInfo.sUserName, releaseInfo.sRepoName);
         connect(&github, &XGitHub::errorMessage, this, &XUpdate::errorMessage);
@@ -356,13 +356,13 @@ void XUpdate::process()
         localFile.close();
 
         if (!localDate.isValid() || remoteDate > localDate) {
-            emit infoMessage(tr("Updating %1: local=%2, remote=%3")
+            emit infoMessage((tr("Updating") + QString(" %1: ") + tr("local") + QString("=%2, ") + tr("remote") + QString("=%3"))
                                  .arg(sFolderName)
                                  .arg(localDate.toString(QStringLiteral("yyyy-MM-dd")))
                                  .arg(remoteDate.toString(QStringLiteral("yyyy-MM-dd"))));
             _downloadAndUnpack(record, releaseHeader, true);
         } else {
-            emit infoMessage(tr("%1 is up to date (%2).")
+            emit infoMessage((QString("%1 ") + tr("is up to date") + QString(" (%2)."))
                                  .arg(sFolderName)
                                  .arg(localDate.toString(QStringLiteral("yyyy-MM-dd"))));
         }
